@@ -208,3 +208,6 @@ __marimo__/
 
 # Poetry
 .poetry/
+
+# Receipts directory
+receipts/

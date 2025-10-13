@@ -1,7 +1,34 @@
-# Kasmage
+<!-- ![alt text](assets/kasmage_alt.png "Kasmage") -->
+<!-- ![alt text](assets/kasmage.png "Kasmage") -->
 
-Kasmage is a whimsical frog-wizard CLI that monitors a Kaspa address for transactions.
-It can print all historical transactions or watch for new ones in real time.
+<!-- 
+I'm new to the crypto space and this might not be anthing game-changing but
+it's a fun little project to work on. If you have ideas for new features, 
+please open a feature request (Issue).  If you’ve built something cool, feel 
+free to fork the repo and submit a PR!  
+ -->
+
+<!-- 
+Flubs Ompi is the official name of the Kasmage frog. Follow me on X @evofcl
+to suggest cool new epithets! Also, if you're a graphic designer, send me a
+.png of your frog design and I might just feature it!
+-->
+
+<table>
+<tr>
+<td width="160">
+  <img src="assets/kasmage.png" width="160" alt="Flubs Ompi, DAG Mage"/>
+</td>
+<td>
+  <h1>Kasmage</h1>
+  <p>
+    🐸 Kasmage is a whimsical, lightweight frog-wizard themed CLI that monitors a Kaspa address for transactions.<br>
+    It can print all historical transactions or watch for new ones in real time.
+    <i>Official mascot:</i> <b>Flubs Ompi, DAG Mage</b>.
+  </p>
+</td>
+</tr>
+</table>
 
 ## Quickstart (Install & Run)
 
@@ -19,9 +46,10 @@ kasmage --address kaspa:yourkaspaaddresshere
 
 ## Features
 
-- Live mode: watch an address and get notified when new transactions confirm
-- Historical mode: print all confirmed transactions (oldest → newest) and exit
-- Works with Kaspa mainnet addresses (kaspa:...)
+- **Live mode**: watch an address and get notified when new transactions confirm  
+- **Historical mode**: print all confirmed transactions (oldest → newest) and exit  
+- **Receipts (new!)**: automatically save each detected transaction as a TXT or JSON eceipt for record-keeping  
+- Compatible with Kaspa mainnet addresses (`kaspa:...`)  
 
 ## Installation
 
@@ -54,10 +82,15 @@ Output example:
 ```
 
 ## Options
+- -h, --help: All this info pretty much
 - --address (required): Kaspa address to monitor
 - --interval: Poll interval in seconds (default: 10)
 - --page-size: Number of tx per API page (default: 50)
 - --historical: Print all confirmed tx and exit
+- -V, --version: Print version and exit
+- --receipts: Write a recipt per new tx (live mode)
+- --receipts-dir: Directory for receipts
+- --receipt-format: Self explanitory
 
 ## License
 MIT © Ethan Villalobos
