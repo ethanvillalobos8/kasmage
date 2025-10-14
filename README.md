@@ -87,7 +87,7 @@ Option 3: Run from source (for developers). Clone the repo, build the wheel, and
 git clone https://github.com/yourname/kasmage.git
 cd kasmage
 poetry build
-pip install --force-reinstall dist/kasmage-0.1.0-py3-none-any.whl
+pip install --force-reinstall dist/kasmage-0.2.0-py3-none-any.whl
 ```
 Now run:
 ```bash
