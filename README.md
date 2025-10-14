@@ -1,19 +1,6 @@
 <!-- ![alt text](assets/kasmage_alt.png "Kasmage") -->
 <!-- ![alt text](assets/kasmage.png "Kasmage") -->
 
-<!-- 
-I'm new to the crypto space and this might not be anthing game-changing but
-it's a fun little project to work on. If you have ideas for new features, 
-please open a feature request (Issue).  If you’ve built something cool, feel 
-free to fork the repo and submit a PR!  
- -->
-
-<!-- 
-Flubs Ompi is the official name of the Kasmage frog. Follow me on X @evofcl
-to suggest cool new epithets! Also, if you're a graphic designer, send me a
-.png of your frog design and I might just feature it!
--->
-
 <table>
 <tr>
 <td width="160">
@@ -22,17 +9,73 @@ to suggest cool new epithets! Also, if you're a graphic designer, send me a
 <td>
   <h1>Kasmage</h1>
   <p>
-    🐸 Kasmage is a whimsical, lightweight frog-wizard themed CLI that monitors a Kaspa address for transactions.<br>
-    It can print all historical transactions or watch for new ones in real time.
-    <i>Official mascot:</i> <b>Flubs Ompi, DAG Mage</b>.
+    🐸 Kasmage is a whimsical, lightweight frog-wizard themed CLI that monitors a Kaspa address for transactions. It can print all historical transactions or watch for new ones in real time.
   </p>
 </td>
 </tr>
 </table>
 
-## Quickstart (Install & Run)
+> **Fun fact:** <span style="color:#49eacb">**Flubs Ompi, DAG Mage**</span> is the official name of the Kasmage frog.    
+> Follow me on X [<span style="color:#db1f83">@evofcl</span>](https://x.com/evofcl) and DM me to suggest cool new epithets!  
+> If you're a graphic designer, send me a .png of your frog design — I might just feature it!
 
-Clone the repo, build the wheel, and install locally:
+##
+![PyPI](https://img.shields.io/pypi/v/kasmage) 
+![Python](https://img.shields.io/pypi/pyversions/kasmage)
+
+## ⚙️ Quickstart (Install & Run)
+<i>Requires Python 3.8+. Tested on 3.10–3.13.</i>
+
+Option 1: Install with pipx (recommended)
+
+pipx installs CLI apps into isolated environments and makes them available globally on your system.
+
+<i>(If you have pipx installed already, skip to step 2)</i>
+
+Step 1.
+First, install pipx:
+```bash
+# if you use homebrew, use:
+brew install pipx
+pipx ensurepath
+
+# if you don't use homebrew, use:
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+
+# for Windows users (Powershell):
+py -m pip install --user pipx
+py -m pipx ensurepath
+```
+
+⚠️ PATH warning: After installing pipx, you may need to restart your terminal or run
+    ```
+    exec zsh (or exec bash)
+    ```
+to refresh your $PATH. If you see zsh: command not found: pipx or zsh: command not found: kasmage, it usually means ~/.local/bin (where pipx puts executables) isn’t in your PATH. Running pipx ensurepath fixes this.
+
+Step 2.
+Install Kasmage:
+```bash
+pipx install kasmage
+kasmage --address kaspa:yourkaspaaddresshere
+
+# to upgrade later:
+pipx upgrade kasmage
+```
+
+Option 2: Install with pip inside a venv
+```bash
+python -m venv ~/.venvs/kasmage
+source ~/.venvs/kasmage/bin/activate
+pip install kasmage
+kasmage --address kaspa:yourkaspaaddresshere
+
+# to upgrade later:
+pip install --upgrade kasmage
+```
+
+Option 3: Run from source (for developers). Clone the repo, build the wheel, and install locally:
 ```bash
 git clone https://github.com/yourname/kasmage.git
 cd kasmage
@@ -48,17 +91,8 @@ kasmage --address kaspa:yourkaspaaddresshere
 
 - **Live mode**: watch an address and get notified when new transactions confirm  
 - **Historical mode**: print all confirmed transactions (oldest → newest) and exit  
-- **Receipts (new!)**: automatically save each detected transaction as a TXT or JSON eceipt for record-keeping  
+- **Receipts (new!)**: automatically save each detected transaction as a TXT or JSON receipt — useful for bookkeeping, merchants, or your own transaction records.  
 - Compatible with Kaspa mainnet addresses (`kaspa:...`)  
-
-## Installation
-
-For now, clone the repo and install with Poetry:
-```bash
-git clone https://github.com/yourname/kasmage.git
-cd kasmage
-poetry install
-```
 
 ## Usage
 
@@ -82,15 +116,26 @@ Output example:
 ```
 
 ## Options
-- -h, --help: All this info pretty much
-- --address (required): Kaspa address to monitor
-- --interval: Poll interval in seconds (default: 10)
-- --page-size: Number of tx per API page (default: 50)
-- --historical: Print all confirmed tx and exit
-- -V, --version: Print version and exit
-- --receipts: Write a recipt per new tx (live mode)
-- --receipts-dir: Directory for receipts
-- --receipt-format: Self explanitory
+```
+-h, --help          Show this message and exit
+-V, --version       Print version and exit
+--address           Kaspa address to monitor (required)
+--interval          Poll interval in seconds (default: 10)
+--page-size         Number of tx per API page (default: 50)
+--historical        Print all confirmed tx and exit
+--receipts          Write a receipt per new tx (live mode)
+--receipts-dir      Directory for receipts (default: ./receipts)
+--receipt-format    Receipt format: txt or json (default: txt)
+```
+
+## Contributing
+
+I'm new to programming for the crypto space and this might not be anything game-changing but
+it's a fun little project to work on. If you have ideas for new features, 
+please open a feature request (Issue).  If you’ve built something cool, feel 
+free to fork the repo and submit a PR!  
+
+Please make sure to update tests as appropriate.
 
 ## License
-MIT © Ethan Villalobos
+[MIT](https://github.com/ethanvillalobos8/kasmage/blob/main/LICENSE) © Ethan Villalobos
