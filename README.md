@@ -23,6 +23,13 @@
 ![PyPI](https://img.shields.io/pypi/v/kasmage) 
 ![Python](https://img.shields.io/pypi/pyversions/kasmage)
 
+## ⚠️ Note on Testnet Support
+
+As of October 2025, the Kaspa public API does **not** support testnet addresses.  
+Kasmage currently only works with **mainnet** (`kaspa:...`) transactions.  
+
+As soon as testnet support becomes available in the API, Kasmage will be updated to support it.
+
 ## ⚙️ Quickstart (Install & Run)
 <i>Requires Python 3.8+. Tested on 3.10–3.13.</i>
 
@@ -127,6 +134,20 @@ Output example:
 --receipts-dir      Directory for receipts (default: ./receipts)
 --receipt-format    Receipt format: txt or json (default: txt)
 ```
+
+## So why Kasmage?
+
+You might be wondering: why use this when wallets and explorers already show transactions?
+
+That’s <i>true</i>, but Kasmage fills a different niche:
+- **Automation & scripting**: run it headless on a server or in a script to trigger actions whenever a transaction lands.
+- **Instant awareness**: instead of refreshing an explorer, Kasmage streams new transactions as they appear.
+- **Receipts & audit trails**: automatically save TXT/JSON receipts for bookkeeping, invoicing, or compliance.
+- **Lightweight & headless**: no heavy wallet UI or node install required; just a simple CLI tool.
+- **Extensible**: fork it, extend it, or integrate with other systems (e.g., Slack, Discord, payment apps).
+- **Fun factor**: transaction tracking feels less like work when Flubs Ompi, the DAG Mage is your companion 🐸.
+
+Wallets are for spending. Explorers are for confirming. Kasmage is for watching, logging, and building.
 
 ## Contributing
 
