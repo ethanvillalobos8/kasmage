@@ -20,8 +20,10 @@
 > If you're a graphic designer, send me a .png of your frog design — I might just feature it!
 
 ##
-![PyPI](https://img.shields.io/pypi/v/kasmage) 
-![Python](https://img.shields.io/pypi/pyversions/kasmage)
+##
+![PyPI](https://img.shields.io/pypi/v/kasmage?color=brightgreen) 
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/kasmage?period=total&units=international_system&left_color=grey&right_color=magenta&left_text=downloads)](https://pepy.tech/projects/kasmage)
+![Python](https://img.shields.io/pypi/pyversions/kasmage?color=blue)
 
 ## ⚠️ Note on Testnet Support
 
@@ -30,7 +32,21 @@ Kasmage currently only works with **mainnet** (`kaspa:...`) transactions.
 
 As soon as testnet support becomes available in the API, Kasmage will be updated to support it.
 
+## ✨ NEW!! – Version 0.3.0 Update
+
+Kasmage just got a sweet upgrade! Here are the highlights:
+
+- **Historical mode styles** → choose between `table`, `ledger`, or `jsonl` output  
+- **Timezone support** → display times in UTC, your local system tz, or any IANA tz (e.g. `America/Chicago`)  
+- **Receipts improvements** → customizable subfolder naming (`short` or `full`), ISO timestamps included in TXT/JSON receipts  
+- **Better formatting** → aligned table output, optional borders, and toggle for shortened vs full txids  
+- **Safer defaults** → more robust API handling with retries, backoff, and user-agent headers  
+
+👉 See the [CHANGELOG](CHANGELOG.md) for the complete list of updates and fixes.
+
 ## ⚙️ Quickstart (Install & Run)
+> **Note:** Already installed Kasmage? Run  
+> `pipx upgrade kasmage` (or `pip install --upgrade kasmage`) to get the latest version.
 <i>Requires Python 3.8+. Tested on 3.10–3.13.</i>
 
 Option 1: Install with pipx (recommended)
@@ -66,9 +82,6 @@ Install Kasmage:
 ```bash
 pipx install kasmage
 kasmage --address kaspa:yourkaspaaddresshere
-
-# to upgrade later:
-pipx upgrade kasmage
 ```
 
 Option 2: Install with pip inside a venv
@@ -77,9 +90,6 @@ python -m venv ~/.venvs/kasmage
 source ~/.venvs/kasmage/bin/activate
 pip install kasmage
 kasmage --address kaspa:yourkaspaaddresshere
-
-# to upgrade later:
-pip install --upgrade kasmage
 ```
 
 Option 3: Run from source (for developers). Clone the repo, build the wheel, and install locally:
@@ -89,50 +99,112 @@ cd kasmage
 poetry build
 pip install --force-reinstall dist/kasmage-0.2.0-py3-none-any.whl
 ```
-Now run:
+Now run (default live mode):
 ```bash
 kasmage --address kaspa:yourkaspaaddresshere
 ```
 
 ## Features
 
-- **Live mode**: watch an address and get notified when new transactions confirm  
-- **Historical mode**: print all confirmed transactions (oldest → newest) and exit  
-- **Receipts (new!)**: automatically save each detected transaction as a TXT or JSON receipt — useful for bookkeeping, merchants, or your own transaction records.  
-- Compatible with Kaspa mainnet addresses (`kaspa:...`)  
+- **Live mode (updated!)**: watch one or more addresses and stream new transactions as they confirm. 
+- **Historical mode (updated!)**: print all confirmed transactions with your choice of format (table, ledger, JSONL). 
+- **Receipts**: automatically save each detected transaction as a TXT or JSON receipt — useful for bookkeeping, POS, or your own transaction records.  
+- **Timezone support (new!)**: show times in UTC, a specific IANA timezone (e.g. America/Chicago), or your local system time. 
+- **Configurable folder naming**: choose short or full subfolder names for receipts. 
+- *Compatible with Kaspa mainnet addresses (`kaspa:...`)*
 
 ## Usage
 
-Watch new transactions (default live mode)
+Watch new transactions (live mode with receipts)
 ```bash
-kasmage --address kaspa:qpwhk9yja6n2l73enwl62s2u52c7u87mjkh4mwhyeueum660ght4735mlsas5
+kasmage --address kaspa:yourkaspaaddresshere kaspa:... --receipts #add as many addresses as you want!
 ```
 Output example:
 ```bash
 🐸🔮 Peering into the orb... (Ctrl+C to stop)
-✨👀 I scry with my amphibian eye a tx: 40.00000000 KAS | b7d51e1d29b... | 2025-10-13 07:28:45 UTC
+✨👀 I scry with my amphibian eye a tx:  49.99990000 KAS | txid: b4a4a0993d7e040105261a6f850fb27a0487737d1bb457d789350545f86780aa | 2025-10-15 17:28:13 UTC
+📜 Behold! Another slimy scroll of coinage joins the spellbook: receipts/kaspa_qpwhk9yja6/receipt_20251015_b4a4a0993d.txt
+✨👀 I scry with my amphibian eye a tx: -50.00000000 KAS | txid: b4a4a0993d7e040105261a6f850fb27a0487737d1bb457d789350545f86780aa | 2025-10-15 17:28:13 UTC
+📜 Behold! Another slimy scroll of coinage joins the spellbook: receipts/kaspa_qz23v0vptc/receipt_20251015_b4a4a0993d.txt
 ```
 Print all past transactions
 ```bash
-kasmage --address kaspa:qpwhk9yja6n2l73enwl62s2u52c7u87mjkh4mwhyeueum660ght4735mlsas5 --historical
+kasmage --address kaspa:yourkaspaaddresshere kaspa:... --historical --historical-tz local --historical-limit 5 --historical-newest-first --short-txid
 ```
 Output example:
+```
+📜 Peering into the enchanted pond, past ripples reveal kaspa:qpwhk9yja6n2l73enwl62s2u52c7u87mjkh4mwhyeueum660ght4735mlsas5’s deeds...
+Address: kaspa_qpwhk9yja6n2l73enwl62s2u52c7u87mjkh4mwhyeueum660ght4735mlsas5
+┌─────────────────────────┬──────────────┬─────┬─────────────┐
+│ Time                    │ Amount (KAS) │ Dir │ TxID        │
+├─────────────────────────┼──────────────┼─────┼─────────────┤
+│ 2025-10-15 12:28:13 CDT │     +49.9999 │ IN  │ b4a4a0…80aa │
+│ 2025-10-15 12:26:11 CDT │     -50.0005 │ OUT │ 613fe2…e043 │
+│ 2025-10-14 13:25:20 CDT │     -10.0010 │ OUT │ 15d03d…4419 │
+│ 2025-10-14 13:11:17 CDT │    -100.0010 │ OUT │ a5781b…c44f │
+│ 2025-10-14 12:57:52 CDT │      +9.9995 │ IN  │ 08d53f…7ffb │
+└─────────────────────────┴──────────────┴─────┴─────────────┘
+📜 Conjuring arcane transactions for kaspa:qz23v0vptctqztwk39quaeuvdxq4qnpr0ax5s8a6ds47gzgzteapu3lnq5tqg...
+Address: kaspa_qz23v0vptctqztwk39quaeuvdxq4qnpr0ax5s8a6ds47gzgzteapu3lnq5tqg
+┌─────────────────────────┬──────────────┬─────┬─────────────┐
+│ Time                    │ Amount (KAS) │ Dir │ TxID        │
+├─────────────────────────┼──────────────┼─────┼─────────────┤
+│ 2025-10-15 12:28:13 CDT │     -50.0000 │ OUT │ b4a4a0…80aa │
+│ 2025-10-15 12:26:11 CDT │     +50.0000 │ IN  │ 613fe2…e043 │
+└─────────────────────────┴──────────────┴─────┴─────────────┘
+```
+Ledger-style (grep-friendly)
 ```bash
-📜 100.00000000 KAS | txid: 6c7a0b8473b... | 2025-10-12 02:43:09 UTC
-📜 200.11837708 KAS | txid: 1a3ede08005... | 2025-10-12 01:21:17 UTC
+kasmage --address kaspa:yourkaspaaddresshere --historical --historical-style ledger
+```
+Output example:
+```
+📜 Gazing back through the mists of time for kaspa:qpwhk9yja6n2l73enwl62s2u52c7u87mjkh4mwhyeueum660ght4735mlsas5...
+Address: kaspa_qpwhk9yja6n2l73enwl62s2u52c7u87mjkh4mwhyeueum660ght4735mlsas5
+[2025-07-17 20:55:35 UTC]  +197.0231 KAS  IN   tx=e6b7c3d1ed49453b4780d226b5f182a758e9f2eacde3789cdc75183b1f3c3e45
+[2025-07-18 20:40:46 UTC]  -197.0231 KAS  OUT  tx=9ab95d12949435487a6aeebf741782ea3c1e5823c42887e20ff6751aff90be1f
+[2025-10-10 22:50:57 UTC]  +200.1184 KAS  IN   tx=1a3ede08005d22fb225a64b1e1633f07f0647eac69c988804450d91240ffd44c
+[2025-10-13 00:17:51 UTC]  -100.0005 KAS  OUT  tx=8d54b611e3ca8163ad7147a94ee278fde44703aec3ea4d51d951eb293e0a9896
+[2025-10-13 01:36:18 UTC]   +99.9999 KAS  IN   tx=6c7a0b8473badb50eba9c612b4461420d1d62666c96429cd586f95a4ba8736ff
+```
+JSONL (machine-friendly)
+```bash
+kasmage --address kaspa:yourkaspaaddresshere --historical --historical-style jsonl
+```
+Output example:
+```
+📜 The spellbook creaks open… what fortunes befell kaspa:qpwhk9yja6n2l73enwl62s2u52c7u87mjkh4mwhyeueum660ght4735mlsas5?
+{"time_utc_iso":"2025-07-17T20:55:35.051000+00:00","time_local":"2025-07-17 20:55:35 UTC","amount_kas":197.02308234,"direction":"IN","txid":"e6b7c3d1ed49453b4780d226b5f182a758e9f2eacde3789cdc75183b1f3c3e45"}
+{"time_utc_iso":"2025-07-18T20:40:46.247000+00:00","time_local":"2025-07-18 20:40:46 UTC","amount_kas":-197.02308234,"direction":"OUT","txid":"9ab95d12949435487a6aeebf741782ea3c1e5823c42887e20ff6751aff90be1f"}
+{"time_utc_iso":"2025-10-10T22:50:57.321000+00:00","time_local":"2025-10-10 22:50:57 UTC","amount_kas":200.11837708,"direction":"IN","txid":"1a3ede08005d22fb225a64b1e1633f07f0647eac69c988804450d91240ffd44c"}
+{"time_utc_iso":"2025-10-13T00:17:51.135000+00:00","time_local":"2025-10-13 00:17:51 UTC","amount_kas":-100.0005,"direction":"OUT","txid":"8d54b611e3ca8163ad7147a94ee278fde44703aec3ea4d51d951eb293e0a9896"}
+{"time_utc_iso":"2025-10-13T01:36:18.832000+00:00","time_local":"2025-10-13 01:36:18 UTC","amount_kas":99.9999,"direction":"IN","txid":"6c7a0b8473badb50eba9c612b4461420d1d62666c96429cd586f95a4ba8736ff"}
 ```
 
 ## Options
 ```
--h, --help          Show this message and exit
--V, --version       Print version and exit
---address           Kaspa address to monitor (required)
---interval          Poll interval in seconds (default: 10)
---page-size         Number of tx per API page (default: 50)
---historical        Print all confirmed tx and exit
---receipts          Write a receipt per new tx (live mode)
---receipts-dir      Directory for receipts (default: ./receipts)
---receipt-format    Receipt format: txt or json (default: txt)
+-h, --help                   Show this message and exit
+-V, --version                Print version and exit
+
+--address ADDR [ADDR ...]    Kaspa address(es) to monitor (required)
+--interval N                 Poll interval in seconds (default: 10). 
+                             Tip: use 1–2 for near real-time, but heavier on API.
+--page-size N                Number of tx per API page (default: 50)
+
+--historical                 Print all confirmed tx and exit
+--historical-style           table | ledger | jsonl (default: table)
+--historical-border          unicode | ascii | none (default: unicode)
+--historical-tz              IANA tz like "America/Chicago", or "local" for system tz
+--historical-limit N         Limit number of rows
+--historical-newest-first    Show newest tx first
+--short-txid                 Show shortened txids in table/ledger
+--no-color                   Disable colored IN/OUT
+
+--receipts                   Write a receipt per new tx (live mode)
+--receipts-dir PATH          Root directory for receipts (default: ./receipts)
+--receipts-dir-style         short | full (default: short)
+--receipt-format             txt | json (default: txt)
+--min-amount N               Only write a receipt if amount >= this KAS
 ```
 
 ## So why Kasmage?
@@ -159,4 +231,4 @@ free to fork the repo and submit a PR!
 Please make sure to update tests as appropriate.
 
 ## License
-[MIT](https://github.com/ethanvillalobos8/kasmage/blob/main/LICENSE) © Ethan Villalobos
+[MIT](LICENSE) © Ethan Villalobos

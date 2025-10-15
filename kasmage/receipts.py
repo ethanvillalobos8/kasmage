@@ -5,6 +5,10 @@ from typing import Optional
 
 from .sentry import format_time_ms
 
+def _iso(ts_ms: Optional[int]) -> str:
+    if ts_ms is None:
+        return "unknown"
+    return datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc).isoformat()
 
 def write_receipt(
     dirpath: str,
@@ -27,14 +31,18 @@ def write_receipt(
     if os.path.exists(path):
         return path  # don't overwrite
 
+    issued_iso = datetime.now(timezone.utc).isoformat()
+
     if fmt == "json":
         payload = {
             "schema": "kasmage.receipt@1",
             "address": address,
             "txid": txid,
-            "amount_kas": float(f"{amount_kas:.8f}"),
+            "amount_kas": round(amount_kas, 8),
+            "time_ms": time_ms,
             "time_utc": format_time_ms(time_ms),
-            "issued_utc": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z"),
+            "time_utc_iso": _iso(time_ms),
+            "issued_utc_iso": issued_iso,
             "generator": "kasmage",
         }
         with open(path, "w", encoding="utf-8") as f:
@@ -46,7 +54,7 @@ def write_receipt(
             f"Amount:  {amount_kas:.8f} KAS\n"
             f"TxID:    {txid}\n"
             f"Time:    {format_time_ms(time_ms)}\n"
-            f"Issued:  {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
+            f"Issued:  {issued_iso}\n"
             "Conjured by: Kasmage 🪄\n"
         )
         with open(path, "w", encoding="utf-8") as f:
