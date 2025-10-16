@@ -32,16 +32,22 @@ Kasmage currently only works with **mainnet** (`kaspa:...`) transactions.
 
 As soon as testnet support becomes available in the API, Kasmage will be updated to support it.
 
-## ✨ NEW!! – Version 0.4.0 Update
+## ✨ NEW!! – Version 0.5.0 Update
 
 Kasmage keeps leveling up! Here’s what’s new in this release:
 
-- **Threshold alerts** → use `--threshold <amount>` to only show transactions ≥ that KAS value  
-- **Direction filtering** → use `--dir in` or `--dir out` to focus only on incoming or outgoing transactions  
-- **Miner-friendly** → easily filter out noise and only see large payouts or relevant movements  
-- **Cleaner live mode** → transactions now respect threshold + direction filters before printing or writing receipts  
+- **Verification (live)** → use `--verify <amount>` (repeatable) to flag exact inbound payments.  
+  - Each amount is only verified once per occurrence (no spam).  
+  - Example: `--verify 1 --verify 1 --verify 5.25`  
+- **Threshold filtering (live)** → `--threshold <amount>` only shows **inbound** transactions ≥ that KAS value.  
+  - Cannot be combined with `--dir`.  
+  - Plays an alert sound if `--alert` is enabled.  
+- **Direction filtering** → use `--dir in` or `--dir out` in either live or historical mode.  
+- **Alert sounds** → add `--alert` to play a WAV sound on threshold or verify hits.  
+- **Sender display** → live logs now include a compact list of sender addresses.  
+- **Guardrails** → historical mode now blocks live-only flags (like `--receipts`, `--verify`, `--alert`, etc.) to prevent invalid combos.  
 
-👉 See the [CHANGELOG](CHANGELOG.md) for the full details.
+👉 See the [CHANGELOG](CHANGELOG.md) for full details.
 
 ## ⚙️ Quickstart (Install & Run)
 > **Note:** Already installed Kasmage? Run  
@@ -105,14 +111,17 @@ kasmage --address kaspa:yourkaspaaddresshere
 
 ## Features
 
-- **Live mode (updated!)**: watch one or more addresses and stream new transactions as they confirm. 
+- **Live mode**: watch one or more addresses and stream new transactions as they confirm. 
 - **Historical mode (updated!)**: print all confirmed transactions with your choice of format (table, ledger, JSONL). 
 - **Receipts**: automatically save each detected transaction as a TXT or JSON receipt — useful for bookkeeping, POS, or your own transaction records.  
+- **Verification (new!)**: flag exact inbound payments with `--verify`.  
+- **Threshold alerts (new!)**: filter inbound transactions by minimum amount (`--threshold N`).  
+- **Direction filter (new!)**: only show `in` or `out` transactions.  
+- **Alert sounds (new!)**: play an optional WAV chime for verify/threshold hits.  
+- **Sender display (new!)**: logs now show the originating addresses of each tx.  
 - **Timezone support**: show times in UTC, a specific IANA timezone (e.g. America/Chicago), or your local system time. 
-- **Configurable folder naming**: choose short or full subfolder names for receipts. 
-- **Threshold alerts (new!)**: filter live transactions by minimum amount. 
-- **Direction filter (new!)**: only show `in` or `out` transactions in live mode.  
-- *Compatible with Kaspa mainnet addresses (`kaspa:...`)*
+- **Configurable folder naming**: choose short or full subfolder names for receipts.  
+- *Compatible with Kaspa mainnet addresses (`kaspa:...`)*  
 
 
 ## Usage
@@ -125,6 +134,7 @@ Output example:
 ```bash
 🐸🔮 Peering into the orb... (Ctrl+C to stop)
 ✨👀 I scry with my amphibian eye a tx:  49.99990000 KAS | txid: b4a4a0993d7e040105261a6f850fb27a0487737d1bb457d789350545f86780aa | 2025-10-15 17:28:13 UTC
+    ↳ from: kaspa:qz23v0..., kaspa:qqw81s...
 📜 Behold! Another slimy scroll of coinage joins the spellbook: receipts/kaspa_qpwhk9yja6/receipt_20251015_b4a4a0993d.txt
 ✨👀 I scry with my amphibian eye a tx: -50.00000000 KAS | txid: b4a4a0993d7e040105261a6f850fb27a0487737d1bb457d789350545f86780aa | 2025-10-15 17:28:13 UTC
 📜 Behold! Another slimy scroll of coinage joins the spellbook: receipts/kaspa_qz23v0vptc/receipt_20251015_b4a4a0993d.txt
@@ -132,6 +142,15 @@ Output example:
 Filter live mode by threshold and direction:
 ```bash
 kasmage --address kaspa:yourkaspaaddresshere --threshold 10 --dir in
+```
+Verify inbound payments
+```bash
+kasmage --address kaspa:yourkaspaaddresshere --verify 1 --verify 5.25
+```
+Output example:
+```bash
+✅ Payment verified: 1.00000000 KAS to kaspa:qpwhk9... | txid: 1234abcd...
+    ↳ from: kaspa:qz23v0..., kaspa:qqw81s...
 ```
 Print all past transactions
 ```bash
@@ -189,31 +208,35 @@ Output example:
 
 ## Options
 ```
--h, --help                   Show this message and exit
--V, --version                Print version and exit
+-h, –help                   Show this message and exit
+-V, –version                Print version and exit
 
---address ADDR [ADDR ...]    Kaspa address(es) to monitor (required)
---interval N                 Poll interval in seconds (default: 10). 
-                             Tip: use 1–2 for near real-time, but heavier on API.
---page-size N                Number of tx per API page (default: 50)
+–address ADDR [ADDR …]    Kaspa address(es) to monitor (required)
+–interval N                 Poll interval in seconds (default: 10).
+Tip: use 1–2 for near real-time, but heavier on API.
+–page-size N                Number of tx per API page (default: 50)
 
---historical                 Print all confirmed tx and exit
---historical-style           table | ledger | jsonl (default: table)
---historical-border          unicode | ascii | none (default: unicode)
---historical-tz              IANA tz like "America/Chicago", or "local" for system tz
---historical-limit N         Limit number of rows
---historical-newest-first    Show newest tx first
---short-txid                 Show shortened txids in table/ledger
---no-color                   Disable colored IN/OUT
+–historical                 Print all confirmed tx and exit
+–historical-style           table | ledger | jsonl (default: table)
+–historical-border          unicode | ascii | none (default: unicode)
+–historical-tz              IANA tz like “America/Chicago”, or “local” for system tz
+–historical-limit N         Limit number of rows
+–historical-newest-first    Show newest tx first
+–short-txid                 Show shortened txids in table/ledger
+–no-color                   Disable colored IN/OUT
 
---receipts                   Write a receipt per new tx (live mode)
---receipts-dir PATH          Root directory for receipts (default: ./receipts)
---receipts-dir-style         short | full (default: short)
---receipt-format             txt | json (default: txt)
---min-amount N               Only write a receipt if amount >= this KAS
+–receipts                   Write a receipt per new tx (live mode)
+–receipts-dir PATH          Root directory for receipts (default: ./receipts)
+–receipts-dir-style         short | full (default: short)
+–receipt-format             txt | json (default: txt)
+–min-amount N               Only write a receipt if amount >= this KAS
 
---threshold N                Only show tx if |amount| >= this KAS (live mode)
---dir {in,out}               Only show transactions of this direction
+–verify AMOUNT              Flag exact inbound payment(s) of this amount (repeatable, live mode only)
+–threshold N                Only show inbound tx if amount >= this KAS (live mode, cannot be combined with –dir)
+–dir {in,out}               Only show transactions of this direction (works in live & historical modes)
+–alert                      Play a WAV sound on verify or threshold hits (live mode)
+
+–no-update-check            Skip checking PyPI for newer Kasmage versions
 ```
 
 ## So why Kasmage?
