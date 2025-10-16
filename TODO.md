@@ -1,5 +1,8 @@
 # Roadmap
-- [✔] Add receipts (txt/json formats)
-- [ ] Receipt verification command
-- [ ] Multiple address monitoring
-- [ ] Discord notification integration (maybe)
+- [✔] Add receipts (txt/json formats) — v0.2.0
+- [✔] Multiple address monitoring — v0.3.0
+- [✔] Threshold & direction filtering (miner-friendly) — v0.4.0
+- [ ] Payment verification mode (expected from specific address / amount) — planned v0.5.0
+- [ ] Webhooks & integrations (Discord/Slack/REST)
+- [ ] Config file support for default options
+- [ ] Testnet support (when Kaspa API allows)

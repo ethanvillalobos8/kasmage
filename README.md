@@ -32,17 +32,16 @@ Kasmage currently only works with **mainnet** (`kaspa:...`) transactions.
 
 As soon as testnet support becomes available in the API, Kasmage will be updated to support it.
 
-## ✨ NEW!! – Version 0.3.0 Update
+## ✨ NEW!! – Version 0.4.0 Update
 
-Kasmage just got a sweet upgrade! Here are the highlights:
+Kasmage keeps leveling up! Here’s what’s new in this release:
 
-- **Historical mode styles** → choose between `table`, `ledger`, or `jsonl` output  
-- **Timezone support** → display times in UTC, your local system tz, or any IANA tz (e.g. `America/Chicago`)  
-- **Receipts improvements** → customizable subfolder naming (`short` or `full`), ISO timestamps included in TXT/JSON receipts  
-- **Better formatting** → aligned table output, optional borders, and toggle for shortened vs full txids  
-- **Safer defaults** → more robust API handling with retries, backoff, and user-agent headers  
+- **Threshold alerts** → use `--threshold <amount>` to only show transactions ≥ that KAS value  
+- **Direction filtering** → use `--dir in` or `--dir out` to focus only on incoming or outgoing transactions  
+- **Miner-friendly** → easily filter out noise and only see large payouts or relevant movements  
+- **Cleaner live mode** → transactions now respect threshold + direction filters before printing or writing receipts  
 
-👉 See the [CHANGELOG](CHANGELOG.md) for the complete list of updates and fixes.
+👉 See the [CHANGELOG](CHANGELOG.md) for the full details.
 
 ## ⚙️ Quickstart (Install & Run)
 > **Note:** Already installed Kasmage? Run  
@@ -109,9 +108,12 @@ kasmage --address kaspa:yourkaspaaddresshere
 - **Live mode (updated!)**: watch one or more addresses and stream new transactions as they confirm. 
 - **Historical mode (updated!)**: print all confirmed transactions with your choice of format (table, ledger, JSONL). 
 - **Receipts**: automatically save each detected transaction as a TXT or JSON receipt — useful for bookkeeping, POS, or your own transaction records.  
-- **Timezone support (new!)**: show times in UTC, a specific IANA timezone (e.g. America/Chicago), or your local system time. 
+- **Timezone support**: show times in UTC, a specific IANA timezone (e.g. America/Chicago), or your local system time. 
 - **Configurable folder naming**: choose short or full subfolder names for receipts. 
+- **Threshold alerts (new!)**: filter live transactions by minimum amount. 
+- **Direction filter (new!)**: only show `in` or `out` transactions in live mode.  
 - *Compatible with Kaspa mainnet addresses (`kaspa:...`)*
+
 
 ## Usage
 
@@ -126,6 +128,10 @@ Output example:
 📜 Behold! Another slimy scroll of coinage joins the spellbook: receipts/kaspa_qpwhk9yja6/receipt_20251015_b4a4a0993d.txt
 ✨👀 I scry with my amphibian eye a tx: -50.00000000 KAS | txid: b4a4a0993d7e040105261a6f850fb27a0487737d1bb457d789350545f86780aa | 2025-10-15 17:28:13 UTC
 📜 Behold! Another slimy scroll of coinage joins the spellbook: receipts/kaspa_qz23v0vptc/receipt_20251015_b4a4a0993d.txt
+```
+Filter live mode by threshold and direction:
+```bash
+kasmage --address kaspa:yourkaspaaddresshere --threshold 10 --dir in
 ```
 Print all past transactions
 ```bash
@@ -205,6 +211,9 @@ Output example:
 --receipts-dir-style         short | full (default: short)
 --receipt-format             txt | json (default: txt)
 --min-amount N               Only write a receipt if amount >= this KAS
+
+--threshold N                Only show tx if |amount| >= this KAS (live mode)
+--dir {in,out}               Only show transactions of this direction
 ```
 
 ## So why Kasmage?
