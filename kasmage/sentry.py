@@ -9,7 +9,7 @@ from importlib.metadata import version, PackageNotFoundError
 
 from .quips import historical_quips
 
-# --- optional tz support via stdlib zoneinfo (Python 3.9+) ---
+# --- Optional tz support via stdlib zoneinfo (Python 3.9+) ---
 try:
     from zoneinfo import ZoneInfo
 except Exception:
@@ -49,9 +49,7 @@ def fetch_transactions_page(address: str, *, limit=PAGE_SIZE, offset=0) -> List[
             return []
         except requests.RequestException as e:
             last_exc = e
-            # simple linear backoff
-            time.sleep(1.5 * (attempt + 1))
-    # If we exhausted retries
+            time.sleep(1.5 * (attempt + 1))  # simple linear backoff
     raise last_exc  # type: ignore[misc]
 
 def fetch_all_transactions(address: str, *, page_size=PAGE_SIZE, max_pages=200) -> List[Dict[str, Any]]:
@@ -80,10 +78,6 @@ def parse_time(tx: Dict[str, Any]) -> Optional[int]:
         return None
 
 def _tzinfo_from_name(tz_name: Optional[str]):
-    """
-    Resolve tzinfo from an IANA tz name. If tz_name is None, use system local.
-    If ZoneInfo unavailable or invalid name, fall back to UTC.
-    """
     if tz_name is None:
         try:
             return datetime.now().astimezone().tzinfo or timezone.utc
@@ -97,10 +91,6 @@ def _tzinfo_from_name(tz_name: Optional[str]):
         return timezone.utc
 
 def _format_time_ms_tz(t_ms: Optional[int], tz_name: Optional[str]) -> str:
-    """
-    Time formatted in the requested tz (or local if tz_name=None).
-    Falls back to UTC on error. Format: YYYY-mm-dd HH:MM:SS ZZZ
-    """
     if t_ms is None:
         return "no-time"
     tzinfo = _tzinfo_from_name(tz_name)
@@ -112,9 +102,6 @@ def _format_time_ms_tz(t_ms: Optional[int], tz_name: Optional[str]) -> str:
         return "no-time"
 
 def format_time_ms(t_ms: Optional[int]) -> str:
-    """
-    Backwards-compatible: always UTC.
-    """
     if t_ms is None:
         return "no-time"
     dt = datetime.fromtimestamp(t_ms/1000, tz=timezone.utc)
@@ -144,7 +131,26 @@ def net_amount_kas_for_address(tx: Dict[str, Any], address: str) -> float:
                 pass
     return (out_total - in_total) / 1e8
 
-# ---------- Pretty printers (no deps) ----------
+def tx_has_sender(tx: Dict[str, Any], expected_sender: str) -> bool:
+    want = norm(expected_sender)
+    if not want:
+        return False
+    for i in tx.get("inputs") or []:
+        if norm(i.get("previous_outpoint_address") or i.get("address")) == want:
+            return True
+    return False
+
+def tx_sender_addresses(tx: Dict[str, Any]) -> List[str]:
+    seen = set()
+    out: List[str] = []
+    for i in tx.get("inputs") or []:
+        a = (i.get("previous_outpoint_address") or i.get("address") or "").strip().lower()
+        if a and a not in seen:
+            seen.add(a)
+            out.append(a)
+    return out
+
+# ---------- Pretty printers ----------
 import re as _re
 _ANSI_RE = _re.compile(r"\x1b\[[0-9;]*m")
 
@@ -152,7 +158,6 @@ def _strip_ansi(s: str) -> str:
     return _ANSI_RE.sub("", s or "")
 
 def _visible_len(s: str) -> int:
-    # crude but good enough without external deps; treats all chars as width=1
     return len(_strip_ansi(s))
 
 def _short_txid(txid: str, head=6, tail=4) -> str:
@@ -175,7 +180,6 @@ def _make_borders(w_time: int, w_amt: int, w_dir: int, w_tx: int, style: str):
         mid_l, mid_j, mid_r = "+", "+", "+"
         bot_l, bot_j, bot_r = "+", "+", "+"
     elif style == "none":
-        # No borders: return empty parts and v=" " as a spacer
         return ("", "", "", "", " "), ("", "", "", ""), ("", "", "", "")
     else:  # unicode
         top_l, top_j, top_r, h, v = "┌", "┬", "┐", "─", "│"
@@ -187,31 +191,21 @@ def _make_borders(w_time: int, w_amt: int, w_dir: int, w_tx: int, style: str):
     return (top, mid, bot, v, v)
 
 def _print_table(rows, use_color: bool, addr_label: str, border_style: str, *, short_txid: bool):
-    """
-    rows: list of (time_str, amt_kas, txid_full)
-    """
-    # derive display values first
     display_rows = []
     for t_str, amt, txid in rows:
         dir_disp  = _fmt_dir(amt, use_color)
-        amt_disp  = _fmt_amount(amt, width=0)  # width will be set after measuring
+        amt_disp  = _fmt_amount(amt, width=0)
         tx_disp   = _short_txid(txid) if short_txid else txid
         display_rows.append((t_str, amt, dir_disp, tx_disp))
 
-    # headers
-    time_header = "Time"
-    amt_header  = "Amount (KAS)"
-    dir_header  = "Dir"
-    tx_header   = "TxID"
+    time_header, amt_header, dir_header, tx_header = "Time", "Amount (KAS)", "Dir", "TxID"
 
-    # dynamic widths
     w_time = max(_visible_len(time_header), *( _visible_len(t) for t, *_ in display_rows ))
     amt_samples = [ _fmt_amount(a, width=0) for _, a, *_ in display_rows ]
     w_amt = max(_visible_len(amt_header), *( _visible_len(s) for s in amt_samples ))
     w_dir = max(_visible_len(dir_header), *( _visible_len(d) for *_, d, _ in display_rows ))
     w_tx  = max(_visible_len(tx_header), *( _visible_len(x) for *_, x in display_rows ))
 
-    # Re-render amount with the final width
     display_rows = [(t, _fmt_amount(a, w_amt), d, x) for (t, a, d, x) in display_rows]
 
     (top, mid, bot, v, _v2) = _make_borders(w_time, w_amt, w_dir, w_tx, border_style)
@@ -249,12 +243,11 @@ def _print_jsonl(rows):
             "time_local": t_str_local,
             "amount_kas": round(amt, 8),
             "direction": direction,
-            "txid": txid,  # always full in JSONL
+            "txid": txid,
         }, separators=(",", ":"), ensure_ascii=False))
 
 # ---------- Modes ----------
 def validate_addresses(addresses: List[str]) -> List[str]:
-    """Lowercase, validate, and de-duplicate while preserving order."""
     seen = set()
     out: List[str] = []
     for a in addresses:
@@ -271,6 +264,9 @@ def validate_addresses(addresses: List[str]) -> List[str]:
         raise SystemExit("No valid Kaspa addresses provided.")
     return out
 
+# on_tx(address, txid, amount_kas, time_ms, tx) → may return True to request stop
+OnTxMulti = Callable[[str, str, float, Optional[int], Dict[str, Any]], Optional[bool]]
+
 def run_historical(
     addresses: List[str],
     page_size: int,
@@ -283,16 +279,15 @@ def run_historical(
     newest_first: bool = False,     # newest first
     border: str = "unicode",        # "unicode" | "ascii" | "none"
     short_txid: bool = False,       # False = full txid (default), True = shortened
+    direction: Optional[str] = None,  # NEW: "in" | "out" | None
 ):
-    """
-    Historical mode with selectable output style and timezone.
-    - style: "table" (pretty), "ledger" (grep-friendly), "jsonl" (machine-friendly)
-    - tz: "UTC" (default), "America/Chicago", etc.; or None to use system local
-    - short_txid: if True, show shortened txids in table/ledger; JSONL is always full
-    """
     style = (style or "table").lower()
     if style not in ("table", "ledger", "jsonl"):
         style = "table"
+
+    dir_filter = (direction or "").lower()
+    if dir_filter not in ("in", "out", ""):
+        dir_filter = ""
 
     addrs = validate_addresses(addresses)
 
@@ -302,6 +297,17 @@ def run_historical(
         if not txs:
             printer(random.choice(historical_quips[1]))
             continue
+
+        # Filter by direction if requested
+        if dir_filter:
+            filtered = []
+            for tx in txs:
+                amt = net_amount_kas_for_address(tx, addr)
+                if dir_filter == "in" and amt >= 0:
+                    filtered.append(tx)
+                elif dir_filter == "out" and amt < 0:
+                    filtered.append(tx)
+            txs = filtered
 
         txs.sort(key=lambda tx: parse_time(tx) or 0)
         if newest_first:
@@ -322,8 +328,8 @@ def run_historical(
                     if t_ms is not None else "unknown"
                 )
                 t_local_str = _format_time_ms_tz(t_ms, tz)
-                direction = "IN" if amt >= 0 else "OUT"
-                rows_jsonl.append((t_iso_utc, t_local_str, amt, direction, txid))
+                direction_str = "IN" if amt >= 0 else "OUT"
+                rows_jsonl.append((t_iso_utc, t_local_str, amt, direction_str, txid))
             _print_jsonl(rows_jsonl)
         else:
             rows_pretty = []
@@ -341,18 +347,17 @@ def run_historical(
 
     return 0
 
-# on_tx(address, txid, amount_kas, time_ms, tx)
-OnTxMulti = Callable[[str, str, float, Optional[int], Dict[str, Any]], None]
-
-def run_live(addresses: List[str], interval: int, page_size: int, *, on_tx: OnTxMulti, printer=print):
-    """
-    Live mode for multiple addresses. Calls on_tx(addr, txid, amt, t_ms, tx)
-    once per address involved. Seeds a per-(addr, txid) 'seen' so history is skipped.
-    Optimized to paginate only when the newest page yields new txs.
-    """
+def run_live(
+    addresses: List[str],
+    interval: int,
+    page_size: int,
+    *,
+    on_tx: OnTxMulti,
+    printer=print,
+    stop_after_sec: Optional[int] = None,  # optional timeout
+):
     addrs = validate_addresses(addresses)
 
-    # seed seen with current history for each address
     seen: set[Tuple[str, str]] = set()
     for addr in addrs:
         current = fetch_all_transactions(addr, page_size=page_size)
@@ -361,11 +366,15 @@ def run_live(addresses: List[str], interval: int, page_size: int, *, on_tx: OnTx
             if txid and txid != "unknown":
                 seen.add((addr, txid))
 
+    start_ts = time.time()
     printer("🐸🔮 Peering into the orb... (Ctrl+C to stop)")
     try:
         while True:
+            if stop_after_sec is not None and (time.time() - start_ts) >= stop_after_sec:
+                printer("⏳ Verification timed out — no matching transaction observed.")
+                return 2
+
             for addr in addrs:
-                # First page only
                 page0 = fetch_transactions_page(addr, limit=page_size, offset=0) or []
                 new_seen = False
                 for tx in page0:
@@ -377,9 +386,10 @@ def run_live(addresses: List[str], interval: int, page_size: int, *, on_tx: OnTx
                     new_seen = True
                     amt = net_amount_kas_for_address(tx, addr)
                     t_ms = parse_time(tx)
-                    on_tx(addr, txid, amt, t_ms, tx)
+                    should_stop = on_tx(addr, txid, amt, t_ms, tx)
+                    if should_stop:
+                        return 0
 
-                # Only paginate deeper if we saw something new and page was full
                 if new_seen and len(page0) == page_size:
                     offset = page_size
                     while True:
@@ -394,7 +404,9 @@ def run_live(addresses: List[str], interval: int, page_size: int, *, on_tx: OnTx
                             seen.add(key)
                             amt = net_amount_kas_for_address(tx, addr)
                             t_ms = parse_time(tx)
-                            on_tx(addr, txid, amt, t_ms, tx)
+                            should_stop = on_tx(addr, txid, amt, t_ms, tx)
+                            if should_stop:
+                                return 0
                         if len(page) < page_size:
                             break
                         offset += page_size
