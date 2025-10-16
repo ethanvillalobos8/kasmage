@@ -51,10 +51,7 @@ def _shorten_addr(addr: str) -> str:
         kaspa:qy2f... -> kaspa_qy2fxxxxxx
     """
     a = (addr or "").lower().strip()
-    if a.startswith("kaspa:"):
-        core = a.split(":", 1)[1]
-    else:
-        core = a
+    core = a.split(":", 1)[1] if a.startswith("kaspa:") else a
     return f"kaspa_{core[:10]}"
 
 def _address_dir(addr: str, style: str) -> str:
@@ -105,10 +102,14 @@ def main():
     p.add_argument("--receipts", action="store_true", help="write a receipt per new tx (live mode)")
     p.add_argument("--receipts-dir", default="receipts", help="directory for receipts")
     p.add_argument(
-        "--receipts-dir-style", choices=["short", "full"], default="short", 
+        "--receipts-dir-style", choices=["short", "full"], default="short",
         help="subfolder naming for each address: 'short' = kaspa_<first10>, 'full' = full address")
     p.add_argument("--receipt-format", choices=["txt", "json"], default="txt", help="receipt format")
     p.add_argument("--min-amount", type=float, default=None, help="only write a receipt if net amount >= this KAS")
+
+    # Miner-friendly filters
+    p.add_argument("--threshold", type=float, default=None, help="only show tx if |amount| >= this KAS")
+    p.add_argument("--dir", choices=["in", "out"], default=None, help="filter tx direction; omit to show both")
 
     # Version flag
     p.add_argument("-V", "--version", action="store_true", help="print version and exit")
@@ -129,12 +130,20 @@ def main():
             tz=tz_arg,
             limit=args.historical_limit,
             newest_first=args.historical_newest_first,
+            border=args.historical_border,
             short_txid=args.short_txid,
         )
 
     def make_on_tx_multi(args):
         def on_tx(addr: str, txid: str, amount_kas: float, time_ms, tx_dict, printer=print):
-            # Always print
+            # Apply filters
+            if args.threshold is not None and abs(amount_kas) < args.threshold:
+                return
+            direction = "in" if amount_kas >= 0 else "out"
+            if args.dir and args.dir != direction:
+                return
+
+            # Show the tx if it passed filters
             printer(
                 f"✨👀 I scry with my amphibian eye a tx: "
                 f"{amount_kas:>12.8f} KAS | txid: {txid} | {sentry.format_time_ms(time_ms)}"

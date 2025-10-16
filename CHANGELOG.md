@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2025-10-16
+### Added
+- **Threshold filtering**: new `--threshold` flag to only show transactions where the absolute amount is greater than or equal to the specified KAS value.
+- **Direction filtering**: new `--dir` flag to show only `in` or `out` transactions.  
+  Useful for miners (filtering only payouts) or merchants (filtering only incoming payments).
+
+### Changed
+- Live mode now respects threshold and direction filters before printing or writing receipts.
+
+---
+
 ## [0.3.0] - 2025-10-15
 ### Added
 - Historical mode output styles:
